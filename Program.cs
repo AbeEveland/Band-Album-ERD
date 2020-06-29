@@ -3,11 +3,10 @@ using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
-using System.Collections;
 
 namespace Music
 {
-    class Bands
+    class Band
     {
         public int Id { get; set; }
         public string Name { get; set; }
@@ -18,23 +17,21 @@ namespace Music
         public bool IsSigned { get; set; }
         public string ContactName { get; set; }
         public int ContactPhoneNumber { get; set; }
-        public int AlbumId { get; set; }
-        public Albums Album { get; set; }
-
-
+        public List<Album> Albums { get; set; }
     }
-    class Albums
+    class Album
     {
         public int Id { get; set; }
         public string Title { get; set; }
         public bool IsExplicit { get; set; }
         public DateTime ReleaseDate { get; set; }
-
+        public int BandId { get; set; }
+        public Band Band { get; set; }
     }
     class MusicContext : DbContext
     {
-        public DbSet<Bands> Bands { get; set; }
-        public DbSet<Albums> Album { get; set; }
+        public DbSet<Band> Bands { get; set; }
+        public DbSet<Album> Albums { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -46,83 +43,45 @@ namespace Music
     }
     class Program
     {
-
-        //private static string choice;
-
         static void Main(string[] args)
         {
             var context = new MusicContext();
-            var bands = context.Bands.Include(band => band.Album);
-            var listofbands = new List<Bands>();
-            //var albums = context.Bands.Include(band => band.Album);
+            var bands = context.Bands.Include(band => band.Albums);
 
-
-            //   var BandCount = Bands.Count();
-            // Console.WriteLine($"There are {BandCount} !");
-
-            // foreach (var Band in Bands)
-            // {
-            //     if (Band.Album == null)
-            //     {
-            //         Console.WriteLine($"There is a Band named {Band.Name} but not on this album");
-            //     }
-            //    else
-            //    {
-            //        Console.WriteLine($"There is a band named {Band.Name} and is on {Band.Album.Title}");
-            //   }
             while (1 == 1)
             {
-                Console.Write("(a)dd Band, (v)iew Band, (q)uit,");
+                Console.WriteLine($"1 - View Bands");
+                Console.WriteLine($"2 - Add an album or a band");
+                Console.WriteLine($"3 - Release a band");
+                Console.WriteLine($"4 - Sign a band");
+                Console.WriteLine($"5 - View band's albums");
+                Console.WriteLine($"6 - View all albums");
+                Console.WriteLine($"7 - View all signed bands");
+                Console.WriteLine($"8 - View all unsigned bands");
+                Console.WriteLine($"Q - quit the application");
+                Console.WriteLine();
                 string choice = Console.ReadLine();
 
-
-                if (choice == "v" || choice == "V")
+                if (choice == "1")
                 {
                     var bandlist = context.Bands.Select(bands => bands.Name);
                     foreach (var band in bandlist)
                     {
                         Console.WriteLine(band);
                     }
-
-
-
-                    // foreach (var band in bands)
-                    //{
-                    // if (band.Album == null)
-                    //{
-                    // Console.WriteLine($"There is a band named {band.Name} but does not have an album.");
-
-                    // }
-                    // else
-                    //  {
-                    //     Console.WriteLine($"There is a band named {band.Name} and has an album named {band.Album.Title}");
-
-                    //  }
-
-                    //Console.WriteLine(Band.Name);
-
-                    //  }
-                    //foreach (var band in bands)
-                    //{
-                    //  if (band.Albums == null)
-                    // {
-                    //     Console.WriteLine($" These are your bands: {band.Name} but has no album");
-
-                    //  }
-                    // else
-                    // {
-                    //     Console.WriteLine($"There is a band named{band.Name} on a album named {bands.Albums.Title}");
-
-                    // }
-
                 }
 
-
-
-                if (choice == "a" || choice == "A")
+                if (choice == "2")
                 {
+                    Console.Clear();
+                    Console.WriteLine($"Would you like to add a (B)and, or (Al)bum?");
+                }
+
+                if (choice == "b" || choice == "B")
+                {
+                    Console.Clear();
                     Console.WriteLine($"Please type name of band and press enter.");
-                    var newName = Console.ReadLine();
+                    var newBand = Console.ReadLine();
 
                     Console.Write("CountryOfOrigin: ");
                     var newCountryOfOrigin = Console.ReadLine();
@@ -145,13 +104,9 @@ namespace Music
                     Console.Write("ContactPhoneNumber: ");
                     var newContactPhoneNumber = Int32.Parse(Console.ReadLine());
 
-                    Console.Write("AlbumId: ");
-                    var newAlbumId = Int32.Parse(Console.ReadLine());
-
-
-                    Bands newbandaddition = new Bands
+                    Band newbandaddition = new Band
                     {
-                        Name = newName,
+                        Name = newBand,
                         CountryOfOrigin = newCountryOfOrigin,
                         NumberOfMembers = newNumberOfMembers,
                         Website = newWebsite,
@@ -159,25 +114,156 @@ namespace Music
                         IsSigned = newIsSigned,
                         ContactName = newContactName,
                         ContactPhoneNumber = newContactPhoneNumber,
-                        AlbumId = newAlbumId,
                     };
                     context.Add(newbandaddition);
 
                     context.SaveChanges();
 
                     Console.WriteLine($"Thank you! Your band has been added.");
-
-
-
                 }
 
+                if (choice == "al")
+                {
+                    Console.Clear();
+                    Console.WriteLine($"Please type name of Album and press enter.");
+                    var newAlbum = Console.ReadLine();
 
-                if (choice == "Q" || choice == "q") break;
+                    Console.Write("Is this album Explicit? ");
+                    var newIsExplicit = Convert.ToBoolean(Console.ReadLine());
 
+                    Console.Write("Please enter release date in this format: yyyy-mm-dd: ");
+                    var newReleaseDate = DateTime.Parse(Console.ReadLine());
 
+                    Console.Write("What is the band id??");
+                    var newBandId = Int32.Parse(Console.ReadLine());
+
+                    Album newAlbumaddition = new Album
+                    {
+                        Title = newAlbum,
+                        IsExplicit = newIsExplicit,
+                        ReleaseDate = newReleaseDate,
+                        BandId = newBandId,
+
+                    };
+                    context.Albums.Add(newAlbumaddition);
+
+                    context.SaveChanges();
+
+                    Console.WriteLine($"Thank you! {newAlbum} has been added.");
+                }
+
+                if (choice == "3")
+                {
+                    Console.Clear();
+                    Console.WriteLine($"Which band would you like to release?");
+                    var bandToRelease = Console.ReadLine();
+                    var ifbandExists = bands.Any(band => band.Name == bandToRelease);
+                    var selectedBand = bands.FirstOrDefault(band => band.Name == bandToRelease);
+
+                    if (ifbandExists)
+                    {
+
+                        selectedBand.IsSigned = false;
+                        Console.WriteLine($"You let released {bandToRelease} ");
+                        context.SaveChanges();
+                    }
+
+                    if (!ifbandExists)
+                    {
+                        Console.WriteLine($"{bandToRelease} does not exist. Press any ket to continue");
+
+                    }
+                }
+
+                if (choice == "4")
+                {
+                    Console.Clear();
+                    Console.WriteLine($"Which band would you like to sign?");
+                    var bandToSign = Console.ReadLine();
+                    var ifbandExists = bands.Any(band => band.Name == bandToSign);
+                    var selectedBand = bands.FirstOrDefault(band => band.Name == bandToSign);
+
+                    if (ifbandExists)
+                    {
+
+                        selectedBand.IsSigned = true;
+                        Console.WriteLine($"You signed {bandToSign} ");
+                        context.SaveChanges();
+                    }
+
+                    if (!ifbandExists)
+                    {
+                        Console.WriteLine($"{bandToSign} does not exist. Press any ket to continue");
+
+                    }
+                }
+
+                if (choice == "5")
+                {
+                    Console.Clear();
+                    Console.WriteLine($"Which band's album would you like to see?");
+                    var Albums = Console.ReadLine();
+
+                    var ifBandExists = bands.Any(band => band.Name == Albums);
+                    var selectedBand = bands.FirstOrDefault(band => band.Name == Albums);
+
+                    if (ifBandExists)
+                    {
+                        Console.WriteLine($"\nThere are {selectedBand.Albums.Count()} albums by {Albums}:\n");
+
+                        foreach (var album in selectedBand.Albums)
+                        {
+                            Console.WriteLine($"* -- {album.Title}");
+                        }
+                    }
+                }
+
+                if (choice == "6")
+                {
+                    Console.Clear();
+                    Console.WriteLine($"These are all of the albums in the database ordered by the release date:\n");
+
+                    var albumsOrderedByReleaseDate = context.Albums.OrderBy(album => album.ReleaseDate);
+
+                    foreach (var album in albumsOrderedByReleaseDate)
+                    {
+                        Console.WriteLine($"* -- {album.ReleaseDate.ToString("MM/dd/yyyy")} ----- \"{album.Title}\"");
+                    }
+                }
+
+                if (choice == "7")
+                {
+                    Console.Clear();
+                    {
+                        Console.WriteLine($"These are all of the signed bands in the database: ");
+
+                        var signedBands = bands.Where(band => band.IsSigned == true);
+
+                        foreach (var band in signedBands)
+                        {
+                            Console.WriteLine($"* -- {band.Name}");
+                        }
+                    }
+
+                    if (choice == "8")
+                    {
+                        Console.Clear();
+                        {
+                            Console.WriteLine($"These are all of the signed bands in the database: ");
+
+                            var signedBands = bands.Where(band => band.IsSigned == false);
+
+                            foreach (var band in signedBands)
+                            {
+                                Console.WriteLine($"* -- {band.Name}");
+                            }
+
+                        }
+                        if (choice == "Q" || choice == "q") break;
+                    }
+                }
             }
         }
     }
 }
-
 
